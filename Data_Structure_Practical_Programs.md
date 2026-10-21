@@ -270,24 +270,7 @@ int main() {
 **Operations:** Enqueue, Dequeue, Display. Nodes are allocated dynamically.
 
 ```c
-```
-
-**Remember:** Insert at `rear`, delete from `front`. When the last node is deleted, set both pointers to `NULL`.
-
----
-
-## 5. Circular Queue Using an Array
-
-```c
 #include <stdio.h>
-#define SIZE 5
-
-int q[SIZE], front = -1, rear = -1;
-
-void insert(int x) {
-    if ((rear + 1) % SIZE == front) {
-        printf("Queue is full\n");
-        return;#include <stdio.h>
 #include <stdlib.h>
 
 typedef struct Node{
@@ -385,6 +368,24 @@ int main() {
     } while(choice!=4);
     return 0;
 }
+```
+
+**Remember:** Insert at `rear`, delete from `front`. When the last node is deleted, set both pointers to `NULL`.
+
+---
+
+## 5. Circular Queue Using an Array
+
+```c
+#include <stdio.h>
+#define SIZE 5
+
+int q[SIZE], front = -1, rear = -1;
+
+void insert(int x) {
+    if ((rear + 1) % SIZE == front) {
+        printf("Queue is full\n");
+        return;
     }
     if (front == -1)
         front = rear = 0;
