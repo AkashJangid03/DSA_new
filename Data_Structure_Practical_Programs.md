@@ -15,66 +15,81 @@
 
 ```c
 #include <stdio.h>
-#define SIZE 5
+#define MAX 3 
 
-struct Stack {
-    int a[SIZE];
+struct Stack{
+    int a[MAX];
     int top;
 };
-
-void initialize(struct Stack *s) {
+void init(struct Stack *s) {
     s->top = -1;
 }
 
-void push(struct Stack *s, int x) {
-    if (s->top == SIZE - 1)
+void push(struct Stack *s, int value) {
+    if (s->top == MAX-1) {
         printf("Stack Overflow\n");
-    else {
-        s->a[++s->top] = x;
-        printf("Element pushed\n");
+    } else {
+        s->a[++s->top] = value;
+        printf("%d pushed", value);
     }
 }
 
 void pop(struct Stack *s) {
-    if (s->top == -1)
-        printf("Stack Underflow\n");
-    else
+    if (s->top == -1) {
+        printf("Stack Underfow");
+    } else {
         printf("Popped: %d\n", s->a[s->top--]);
+    }
 }
 
 void peek(struct Stack *s) {
-    if (s->top == -1)
-        printf("Stack is empty\n");
-    else
-        printf("Top: %d\n", s->a[s->top]);
+    if (s->top == -1) {
+        printf("Notthing to peek in. Stack is Empty\n");
+    } else {
+        printf("Top Most Element: %d\n", s->a[s->top]);
+    }
 }
 
 void display(struct Stack *s) {
     int i;
     if (s->top == -1) {
-        printf("Stack is empty\n");
+        printf("Stack is empty to display\n");
         return;
     }
-    for (i = s->top; i >= 0; i--)
+    for (i=s->top; i>=0; i--) {
         printf("%d ", s->a[i]);
+    }
     printf("\n");
 }
 
 int main() {
     struct Stack s;
-    int ch, x;
-    initialize(&s);
+    int ch, value;
+    init(&s);
 
     do {
-        printf("\n1.Push 2.Pop 3.Peek 4.Display 5.Exit\n");
+        printf("\n1.Push\n2.Pop\n3.Peek\n4.Display\n5.Exit\n");
         scanf("%d", &ch);
-        switch (ch) {
-            case 1: printf("Enter value: "); scanf("%d", &x); push(&s, x); break;
-            case 2: pop(&s); break;
-            case 3: peek(&s); break;
-            case 4: display(&s); break;
-            case 5: break;
-            default: printf("Invalid choice\n");
+        switch(ch) {
+            case 1: 
+                printf("Enter value to push: \n");
+                scanf("%d", &value);
+                push(&s, value);
+                break;
+            case 2: 
+                pop(&s);
+                break;
+            case 3: 
+                peek(&s);
+                break;
+            case 4: 
+                display(&s);
+                break;
+            case 5: 
+                printf("Exiting...");
+                break;
+            default:
+                printf("Invalid Choice");
         }
     } while (ch != 5);
     return 0;
@@ -91,50 +106,69 @@ int main() {
 
 ```c
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#define SIZE 100
+#define MAX 10
+
+typedef struct {
+    char arr[MAX][MAX];
+    int top;
+} Stack;
+
+void init(Stack *s) {
+    s->top = -1;
+}
+
+int isEmpty(Stack *s) {
+    return (s->top == -1);
+}
+
+void push(Stack *s, char *str) {
+    strcpy(s->arr[++(s->top)], str);
+}
+
+char* pop (Stack *s) {
+    if(isEmpty(s)) {
+        printf("Stack Underflow\n");
+        exit(1);
+    }
+    return s->arr[(s->top)--];
+}
+
+int isOperator(char ch) {
+    return (ch=='+' || ch=='-' || ch=='*' || ch=='/');
+}
 
 int main() {
-    char prefix[SIZE], stack[SIZE][SIZE], a[SIZE], b[SIZE], temp[SIZE];
-    int top = -1, i;
+    Stack s;
+    init(&s);
+    char prefix[MAX];
+    char temp[MAX];
 
-    printf("Enter prefix expression: ");
-    scanf("%99s", prefix);
+    printf("Enter Prefix Expression: ");
+    scanf("%s", prefix);
 
-    for (i = (int)strlen(prefix) - 1; i >= 0; i--) {
-        char ch = prefix[i];
-
-        if (isalnum((unsigned char)ch)) {
-            temp[0] = ch;
+    int len=strlen(prefix);
+    for (int i=len-1; i>=0; i--) {
+        if(isalnum(prefix[i])) {
+            temp[0] = prefix[i];
             temp[1] = '\0';
-            strcpy(stack[++top], temp);
-        } else if (ch == '+' || ch == '-' || ch == '*' || ch == '/') {
-            if (top < 1) {
-                printf("Invalid expression\n");
-                return 0;
-            }
-            strcpy(a, stack[top--]); /* left operand */
-            strcpy(b, stack[top--]); /* right operand */
-            strcpy(temp, a);
-            strcat(temp, b);
-            {
-                int len = (int)strlen(temp);
-                temp[len] = ch;
-                temp[len + 1] = '\0';
-            }
-            strcpy(stack[++top], temp);
-        } else {
-            printf("Invalid character\n");
-            return 0;
+            push(&s, temp);
+        }
+        else if (isOperator(prefix[i])) {
+            char op1[MAX], op2[MAX];
+            strcpy(op1, pop(&s));
+            strcpy(op2, pop(&s));
+            strcpy(temp, op1);
+            strcat(temp, op2);
+            int l = strlen(temp);
+            temp[l] = prefix[i];
+            temp[l+1] = '\0';
+            push(&s, temp);
         }
     }
-
-    if (top == 0)
-        printf("Postfix: %s\n", stack[top]);
-    else
-        printf("Invalid expression\n");
-
+    printf("Postfix Expression: %s\n", pop(&s));
     return 0;
 }
 ```
@@ -149,44 +183,80 @@ int main() {
 
 ```c
 #include <stdio.h>
-#include <string.h>
-#define SIZE 200
+#include <stdlib.h>
+#define MAX 20
 
-int main() {
-    char exp[SIZE], stack[SIZE];
-    int top = -1, i, balanced = 1;
+typedef struct {
+    char arr[MAX];
+    int top;
+} Stack;
 
-    printf("Enter expression: ");
-    fgets(exp, SIZE, stdin);
+void init(Stack *s) {
+    s->top = -1;
+}
 
-    for (i = 0; exp[i] != '\0'; i++) {
-        char ch = exp[i];
+int isEmpty(Stack *s) {
+    return (s->top == -1);
+}
 
-        if (ch == '(' || ch == '{' || ch == '[')
-            stack[++top] = ch;
-        else if (ch == ')' || ch == '}' || ch == ']') {
-            if (top == -1) {
-                balanced = 0;
-                break;
+int isFull(Stack *s) {
+    return (s->top == MAX-1);
+}
+
+void push(Stack *s, char ch) {
+    if(isFull(s)) {
+        printf("Stack Overflow");
+        exit(1);
+    }
+    s->arr[++(s->top)] = ch;
+}
+
+char pop (Stack *s) {
+    if(isEmpty(s)) {
+        return '\0';
+    }
+    return s->arr[(s->top)--];
+}
+
+int isMatchingPair(char open, char close) {
+    if (open=='(' && close==')') return 1;
+    if (open=='[' && close==']') return 1;
+    if (open=='{' && close=='}') return 1;
+    return 0;
+}
+
+int checkBalance(char expr[]) {
+    Stack s;
+    init(&s);
+
+    for (int i=0; expr[i] != '\0'; i++) {
+        char ch = expr[i];
+
+        if (ch=='(' || ch=='[' || ch=='{') {
+            push(&s, ch);
+        }
+        else if (ch==')' || ch==']' || ch=='}') {
+            if (isEmpty(&s)) {
+                return 0;
             }
-            if ((ch == ')' && stack[top] != '(') ||
-                (ch == '}' && stack[top] != '{') ||
-                (ch == ']' && stack[top] != '[')) {
-                balanced = 0;
-                break;
+            char open = pop(&s);
+            if(!isMatchingPair(open, ch)) {
+                return 0;
             }
-            top--;
         }
     }
+    return isEmpty(&s);
+}
 
-    if (top != -1)
-        balanced = 0;
-
-    if (balanced)
-        printf("Balanced\n");
-    else
-        printf("Unbalanced\n");
-
+int main() {
+    char expr[MAX];
+    printf("Enter Expression: ");
+    scanf("%s", expr);
+    if (checkBalance(expr)) {
+        printf("Expression is Balanced\n");
+    } else {
+        printf("Expression is unbalanced\n");
+    }
     return 0;
 }
 ```
@@ -200,76 +270,6 @@ int main() {
 **Operations:** Enqueue, Dequeue, Display. Nodes are allocated dynamically.
 
 ```c
-#include <stdio.h>
-#include <stdlib.h>
-
-struct Node {
-    int data;
-    struct Node *next;
-};
-
-struct Node *front = NULL, *rear = NULL;
-
-void enqueue(int x) {
-    struct Node *n = (struct Node *)malloc(sizeof(struct Node));
-    if (n == NULL) {
-        printf("Memory allocation failed\n");
-        return;
-    }
-    n->data = x;
-    n->next = NULL;
-
-    if (rear == NULL)
-        front = rear = n;
-    else {
-        rear->next = n;
-        rear = n;
-    }
-    printf("Inserted\n");
-}
-
-void dequeue() {
-    struct Node *t;
-    if (front == NULL) {
-        printf("Queue is empty\n");
-        return;
-    }
-    t = front;
-    printf("Deleted: %d\n", t->data);
-    front = front->next;
-    if (front == NULL)
-        rear = NULL;
-    free(t);
-}
-
-void display() {
-    struct Node *t = front;
-    if (t == NULL) {
-        printf("Queue is empty\n");
-        return;
-    }
-    while (t != NULL) {
-        printf("%d ", t->data);
-        t = t->next;
-    }
-    printf("\n");
-}
-
-int main() {
-    int ch, x;
-    do {
-        printf("\n1.Enqueue 2.Dequeue 3.Display 4.Exit\n");
-        scanf("%d", &ch);
-        switch (ch) {
-            case 1: printf("Enter value: "); scanf("%d", &x); enqueue(x); break;
-            case 2: dequeue(); break;
-            case 3: display(); break;
-            case 4: break;
-            default: printf("Invalid choice\n");
-        }
-    } while (ch != 4);
-    return 0;
-}
 ```
 
 **Remember:** Insert at `rear`, delete from `front`. When the last node is deleted, set both pointers to `NULL`.
@@ -287,7 +287,104 @@ int q[SIZE], front = -1, rear = -1;
 void insert(int x) {
     if ((rear + 1) % SIZE == front) {
         printf("Queue is full\n");
+        return;#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Node{
+    int data;
+    struct Node* next;
+} Node;
+
+typedef struct {
+    Node *front;
+    Node *rear;
+} Queue;
+
+void init(Queue *q) {
+    q->front = q->rear = NULL;
+}
+
+int isEmpty(Queue *q){
+    return (q->front == NULL);
+}
+
+void enqueue (Queue *q, int value) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    if (newNode == NULL) {
+        printf("Memoory allocation failed\n");
         return;
+    }
+    newNode->data = value;
+    newNode->next = NULL;
+
+    if(isEmpty(q)) {
+        q->front = q->rear = newNode;
+    } else {
+        q->rear->next = newNode;
+        q->rear = newNode;
+    }
+    printf("%d inserted\n", value);
+}
+
+void dequeue(Queue *q) {
+    if (isEmpty(q)) {
+        printf("Queue Underflow\n");
+        return;
+    }
+    Node* temp = q->front;
+    printf("Deleted element: %d\n", temp->data);
+    q->front = q->front->next;
+    if (q->front == NULL){
+        q->rear = NULL;
+    }
+    free(temp);
+}
+
+void display(Queue *q) {
+    if (isEmpty(q)) {
+        printf("Queue is empty\n");
+        return;
+    }
+    Node* temp = q->front;
+    printf("Queue elements: \n");
+    while (temp != NULL) {
+        printf("%d ", temp->data);
+        temp = temp->next;
+    }
+    printf("\n");
+}
+
+int main() {
+    Queue q;
+    init(&q);
+    int choice, value;
+    
+    do {
+        printf("\n\n--Queue Linked List--");
+        printf("\n1.Enqueu\n2.Dequeue\n3.Display\n4.Exit\n");
+        scanf("%d", &choice);
+
+        switch(choice) {
+            case 1: 
+                printf("Enter a value to enqueue: ");
+                scanf("%d", &value);
+                enqueue(&q, value);
+                break;
+            case 2:
+                dequeue(&q);
+                break;
+            case 3:
+                display(&q);
+                break;
+            case 4: 
+                printf("Exiting...");
+                break;
+            default:
+                printf("Invalid Choice");
+        }
+    } while(choice!=4);
+    return 0;
+}
     }
     if (front == -1)
         front = rear = 0;
@@ -1006,6 +1103,186 @@ int main() {
     return 0;
 }
 ```
+
+---
+
+## BST 
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Node {
+    int data;
+    struct Node *left;
+    struct Node *right;
+} Node;
+Node *root = NULL;
+
+Node *createNode (int value) {
+    Node *newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = value;
+    newNode->left = newNode->right = NULL;
+    return newNode;
+}
+
+Node *insert(Node *root, int value) {
+    if (root == NULL) {
+        return createNode(value);
+    }
+    if (value < root->data) {
+        root->left = insert(root->left, value);
+    }
+    else if (value > root->data) {
+        root->right = insert(root->right, value);
+    }
+    return root;
+}
+
+Node *findMin(Node *root) {
+    while (root && root->left != NULL) {
+        root = root->left;
+    }
+    return root;
+}
+
+Node *deleteNode(Node *root, int key) {
+    if (key < root->data)
+        root->left = deleteNode(root->left, key);
+    else if (key > root->data)
+        root->right = deleteNode(root->right, key);
+    else {
+        if (root->left == NULL || root->right == NULL) {
+            Node *temp = root->left ? root->left : root->right;
+            free(root);
+            return temp;
+        }
+        Node *temp = findMin(root->right);
+        root->data = temp->data;
+        root->right = deleteNode(root->right, temp->data);
+    }
+    return root;
+}
+
+Node *findMax(Node *root) {
+    while (root && root->right != NULL) {
+        root = root->right;
+    }
+    return root;
+}
+
+int search(Node *root, int key) {
+    if (root == NULL) {
+        return 0;
+    }
+    if (key == root->data) {
+        return 1;
+    } else if (key < root->data) {
+        return search(root->left, key);
+    } else {
+        return search(root->right, key);
+    }
+}
+
+void inorder(Node *root) {
+    if (root != NULL) {
+        inorder(root->left);
+        printf("%d ", root->data);
+        inorder(root->right);
+    }
+}
+
+void preorder(Node *root) {
+    if (root != NULL) {
+        printf("%d ", root->data);
+        preorder(root->left);
+        preorder(root->right);
+    }
+}
+
+void postorder(Node *root) {
+    if (root != NULL) {
+        postorder(root->left);
+        postorder(root->right);
+        printf("%d ", root->data);
+    }
+}
+
+int main() {
+    int choice, value;
+    Node *temp;
+    
+    do {
+        printf("\n\n-- Binary Search Tree Menu --");
+        printf("\n1.Insert\n2.Delete\n3.Search\n4.Inorder\n5.Preorder\n6.Postorder\n7.Find_Min\n8.Find_Max\n9.Exit");
+        printf("\nEnter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1: 
+                printf("Enter value to insert: ");
+                scanf("%d", &value);
+                root = insert(root, value);
+                printf("Element Inserted");
+                break;
+            case 2:
+                printf("Enter the value to delete: ");
+                scanf("%d", &value);
+                if (search(root, value)) {
+                    root = deleteNode(root, value);
+                    printf("Element deleted successfully");
+                } else {
+                    printf("Element not found");
+                }
+                break;
+            case 3:
+                printf("Enter value to search: ");
+                scanf("%d", &value);
+                if (search(root, value)) {
+                    printf("Element found");
+                } else {
+                    printf("Element not found");
+                }
+                break;
+            case 4: 
+                printf("Inorder: ");
+                inorder(root);
+                break;
+            case 5: 
+                printf("Preorder: ");
+                preorder(root);
+                break;
+            case 6: 
+                printf("Postorder: ");
+                postorder(root);
+                break;
+            case 7: 
+                temp = findMin(root);
+                if (temp != NULL) {
+                    printf("Minimum Element: %d", temp->data);
+                } else {
+                    printf("Tree is empty");
+                }
+                break;
+            case 8: 
+                temp = findMax(root);
+                if (temp != NULL) {
+                    printf("Maximum element: %d", temp->data);
+                } else {
+                    printf("Tree is empty");
+                }
+                break;
+            case 9: 
+                printf("Exiting...");
+                break;
+            default:
+                printf("Invalid Choice");
+        }
+    } while (choice != 9);
+    return 0;
+}
+```
+
 
 ---
 
