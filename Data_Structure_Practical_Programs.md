@@ -273,7 +273,7 @@ int main() {
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct Node{
+typedef struct Node {
     int data;
     struct Node* next;
 } Node;
@@ -283,41 +283,45 @@ typedef struct {
     Node *rear;
 } Queue;
 
-void init(Queue *q) {
+void initialize(Queue *q) {
     q->front = q->rear = NULL;
 }
 
-int isEmpty(Queue *q){
+int isEmpty(Queue *q) {
     return (q->front == NULL);
 }
 
-void enqueue (Queue *q, int value) {
+void enqueue(Queue *q, int value) {
     Node* newNode = (Node*)malloc(sizeof(Node));
     if (newNode == NULL) {
-        printf("Memoory allocation failed\n");
+        printf("Memory allocation failed!\n");
         return;
     }
+
     newNode->data = value;
     newNode->next = NULL;
 
-    if(isEmpty(q)) {
+
+    if (isEmpty(q)) {
         q->front = q->rear = newNode;
     } else {
         q->rear->next = newNode;
         q->rear = newNode;
     }
-    printf("%d inserted\n", value);
+
+    printf("%d inserted into queue\n", value);
 }
 
 void dequeue(Queue *q) {
     if (isEmpty(q)) {
-        printf("Queue Underflow\n");
+        printf("Queue Underflow! Cannot dequeue\n");
         return;
     }
+
     Node* temp = q->front;
     printf("Deleted element: %d\n", temp->data);
     q->front = q->front->next;
-    if (q->front == NULL){
+    if (q->front == NULL) {
         q->rear = NULL;
     }
     free(temp);
@@ -328,8 +332,9 @@ void display(Queue *q) {
         printf("Queue is empty\n");
         return;
     }
+
     Node* temp = q->front;
-    printf("Queue elements: \n");
+    printf("Queue elements: ");
     while (temp != NULL) {
         printf("%d ", temp->data);
         temp = temp->next;
@@ -339,33 +344,41 @@ void display(Queue *q) {
 
 int main() {
     Queue q;
-    init(&q);
+    initialize(&q);
+
     int choice, value;
-    
+
     do {
-        printf("\n\n--Queue Linked List--");
-        printf("\n1.Enqueu\n2.Dequeue\n3.Display\n4.Exit\n");
+        printf("\n--- Queue Menu ---\n");
+        printf("1. Enqueue\n");
+        printf("2. Dequeue\n");
+        printf("3. Display\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
         scanf("%d", &choice);
 
-        switch(choice) {
-            case 1: 
-                printf("Enter a value to enqueue: ");
+        switch (choice) {
+            case 1:
+                printf("Enter value to insert: ");
                 scanf("%d", &value);
                 enqueue(&q, value);
                 break;
+
             case 2:
                 dequeue(&q);
                 break;
+
             case 3:
                 display(&q);
                 break;
-            case 4: 
-                printf("Exiting...");
-                break;
+
+            case 4:
+                exit(0);
+
             default:
-                printf("Invalid Choice");
+                printf("Invalid choice\n");
         }
-    } while(choice!=4);
+    } while (choice != 4);
     return 0;
 }
 ```
@@ -378,64 +391,115 @@ int main() {
 
 ```c
 #include <stdio.h>
-#define SIZE 5
+#include <stdlib.h>
 
-int q[SIZE], front = -1, rear = -1;
+#define MAX 5
 
-void insert(int x) {
-    if ((rear + 1) % SIZE == front) {
-        printf("Queue is full\n");
-        return;
-    }
-    if (front == -1)
-        front = rear = 0;
-    else
-        rear = (rear + 1) % SIZE;
-    q[rear] = x;
-    printf("Inserted\n");
+typedef struct {
+    int arr[MAX];
+    int front;
+    int rear;
+} CircularQueue;
+
+void initialize(CircularQueue *q) {
+    q->front = -1;
+    q->rear = -1;
 }
 
-void delete() {
-    if (front == -1) {
+int isEmpty(CircularQueue *q) {
+    return (q->front == -1);
+}
+
+int isFull(CircularQueue *q) {
+    return ((q->rear + 1) % MAX == q->front);
+}
+
+void insert(CircularQueue *q, int value) {
+    if (isFull(q)) {
+        printf("Queue Overflow! Cannot insert %d\n", value);
+        return;
+    }
+
+    if (isEmpty(q)) {
+        q->front = q->rear = 0;
+    } else {
+        q->rear = (q->rear + 1) % MAX;
+    }
+
+    q->arr[q->rear] = value;
+    printf("%d inserted\n", value);
+}
+
+void delete(CircularQueue *q) {
+    if (isEmpty(q)) {
+        printf("Queue Underflow! Cannot delete\n");
+        return;
+    }
+
+    printf("Deleted element: %d\n", q->arr[q->front]);
+
+    if (q->front == q->rear) {
+        q->front = q->rear = -1;
+    } else {
+        q->front = (q->front + 1) % MAX;
+    }
+}
+
+void display(CircularQueue *q) {
+    if (isEmpty(q)) {
         printf("Queue is empty\n");
         return;
     }
-    printf("Deleted: %d\n", q[front]);
-    if (front == rear)
-        front = rear = -1;
-    else
-        front = (front + 1) % SIZE;
-}
 
-void display() {
-    int i;
-    if (front == -1) {
-        printf("Queue is empty\n");
-        return;
-    }
-    i = front;
+    printf("Queue elements: ");
+    int i = q->front;
+
     while (1) {
-        printf("%d ", q[i]);
-        if (i == rear)
+        printf("%d ", q->arr[i]);
+        if (i == q->rear)
             break;
-        i = (i + 1) % SIZE;
+        i = (i + 1) % MAX;
     }
     printf("\n");
 }
 
 int main() {
-    int ch, x;
+    CircularQueue q;
+    initialize(&q);
+
+    int choice, value;
+
     do {
-        printf("\n1.Insert 2.Delete 3.Display 4.Exit\n");
-        scanf("%d", &ch);
-        switch (ch) {
-            case 1: printf("Enter value: "); scanf("%d", &x); insert(x); break;
-            case 2: delete(); break;
-            case 3: display(); break;
-            case 4: break;
-            default: printf("Invalid choice\n");
+        printf("\n--- Circular Queue Menu ---\n");
+        printf("1. Insert\n");
+        printf("2. Delete\n");
+        printf("3. Display\n");
+        printf("4. Exit\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter value: ");
+                scanf("%d", &value);
+                insert(&q, value);
+                break;
+
+            case 2:
+                delete(&q);
+                break;
+
+            case 3:
+                display(&q);
+                break;
+
+            case 4:
+                exit(0);
+
+            default:
+                printf("Invalid choice\n");
         }
-    } while (ch != 4);
+    } while (choice != 4);
     return 0;
 }
 ```
@@ -450,72 +514,112 @@ int main() {
 
 ```c
 #include <stdio.h>
-#define SIZE 5
+#include <stdlib.h>
 
-struct Job {
-    int id, pages;
-};
+#define MAX 5
 
-struct Job q[SIZE];
-int front = -1, rear = -1;
+typedef struct {
+    int jobId;
+    int pages;
+} PrintJob;
 
-void addJob() {
-    struct Job j;
-    if ((rear + 1) % SIZE == front) {
-        printf("Job queue is full\n");
-        return;
-    }
-    printf("Enter job ID and pages: ");
-    scanf("%d%d", &j.id, &j.pages);
+typedef struct {
+    PrintJob jobs[MAX];
+    int front;
+    int rear;
+} Queue;
 
-    if (front == -1)
-        front = rear = 0;
-    else
-        rear = (rear + 1) % SIZE;
-    q[rear] = j;
-    printf("Job added\n");
+void initialize(Queue *q) {
+    q->front = -1;
+    q->rear = -1;
 }
 
-void processJob() {
-    if (front == -1) {
-        printf("No pending jobs\n");
-        return;
-    }
-    printf("Printing Job ID %d, Pages %d\n", q[front].id, q[front].pages);
-    if (front == rear)
-        front = rear = -1;
-    else
-        front = (front + 1) % SIZE;
+int isEmpty(Queue *q) {
+    return (q->front == -1);
 }
 
-void displayJobs() {
-    int i;
-    if (front == -1) {
-        printf("No pending jobs\n");
+int isFull(Queue *q) {
+    return (q->rear == MAX - 1);
+}
+
+void addJob(Queue *q, int id, int pages) {
+    if (isFull(q)) {
+        printf("Queue Full! Cannot add new job\n");
         return;
     }
-    i = front;
-    while (1) {
-        printf("Job ID: %d, Pages: %d\n", q[i].id, q[i].pages);
-        if (i == rear)
-            break;
-        i = (i + 1) % SIZE;
+
+    if (isEmpty(q))
+        q->front = 0;
+
+    q->rear++;
+    q->jobs[q->rear].jobId = id;
+    q->jobs[q->rear].pages = pages;
+
+    printf("Print Job %d added (%d pages)\n", id, pages);
+}
+
+void processJob(Queue *q) {
+    if (isEmpty(q)) {
+        printf("Queue Empty! No jobs to process\n");
+        return;
+    }
+
+    PrintJob job = q->jobs[q->front];
+    printf("Processing Job ID: %d (%d pages)\n", job.jobId, job.pages);
+
+    q->front++;
+    if (q->front > q->rear)
+        q->front = q->rear = -1;
+}
+
+void displayJobs(Queue *q) {
+    if (isEmpty(q)) {
+        printf("No pending print jobs\n");
+        return;
+    }
+
+    printf("Pending Print Jobs:\n");
+    for (int i = q->front; i <= q->rear; i++) {
+        printf("Job ID: %d, Pages: %d\n",
+               q->jobs[i].jobId,
+               q->jobs[i].pages);
     }
 }
 
 int main() {
-    int ch;
+    Queue q;
+    initialize(&q);
+
+    int choice, id, pages;
+
     do {
-        printf("\n1.Add Job 2.Process Job 3.Display Jobs 4.Exit\n");
-        scanf("%d", &ch);
-        switch (ch) {
-            case 1: addJob(); break;
-            case 2: processJob(); break;
-            case 3: displayJobs(); break;
-            case 4: break;
-            default: printf("Invalid choice\n");
+        printf("\n--- Printer Job Scheduling ---\n");
+        printf("1. Add Print Job\n");
+        printf("2. Process Print Job\n");
+        printf("3. Display Pending Jobs\n");
+        printf("4. Exit\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+        switch (choice) {
+            case 1:
+                printf("Enter Job ID: ");
+                scanf("%d", &id);
+                printf("Enter Number of Pages: ");
+                scanf("%d", &pages);
+                addJob(&q, id, pages);
+                break;
+            case 2:
+                processJob(&q);
+                break;
+            case 3:
+                displayJobs(&q);
+                break;
+            case 4:
+                exit(0);
+            default:
+                printf("Invalid choice\n");
         }
-    } while (ch != 4);
+    } while (choice != 4);
     return 0;
 }
 ```
@@ -1284,344 +1388,3 @@ int main() {
 }
 ```
 
-
----
-
-## 12. Binary Search Tree: Insert, Delete, Search, Inorder, Preorder
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-
-struct Node {
-    int data;
-    struct Node *left, *right;
-};
-
-struct Node *newNode(int x) {
-    struct Node *p = (struct Node *)malloc(sizeof(struct Node));
-    if (p == NULL) return NULL;
-    p->data = x;
-    p->left = p->right = NULL;
-    return p;
-}
-
-struct Node *insert(struct Node *root, int x) {
-    if (root == NULL) return newNode(x);
-    if (x < root->data) root->left = insert(root->left, x);
-    else if (x > root->data) root->right = insert(root->right, x);
-    else printf("Duplicate value\n");
-    return root;
-}
-
-struct Node *minimum(struct Node *root) {
-    while (root != NULL && root->left != NULL)
-        root = root->left;
-    return root;
-}
-
-struct Node *deleteNode(struct Node *root, int x) {
-    struct Node *t;
-    if (root == NULL) return NULL;
-
-    if (x < root->data)
-        root->left = deleteNode(root->left, x);
-    else if (x > root->data)
-        root->right = deleteNode(root->right, x);
-    else {
-        if (root->left == NULL) {
-            t = root->right;
-            free(root);
-            return t;
-        }
-        if (root->right == NULL) {
-            t = root->left;
-            free(root);
-            return t;
-        }
-        t = minimum(root->right);
-        root->data = t->data;
-        root->right = deleteNode(root->right, t->data);
-    }
-    return root;
-}
-
-int search(struct Node *root, int x) {
-    if (root == NULL) return 0;
-    if (root->data == x) return 1;
-    if (x < root->data) return search(root->left, x);
-    return search(root->right, x);
-}
-
-void inorder(struct Node *root) {
-    if (root != NULL) {
-        inorder(root->left);
-        printf("%d ", root->data);
-        inorder(root->right);
-    }
-}
-
-void preorder(struct Node *root) {
-    if (root != NULL) {
-        printf("%d ", root->data);
-        preorder(root->left);
-        preorder(root->right);
-    }
-}
-
-int main() {
-    struct Node *root = NULL;
-    int ch, x;
-    do {
-        printf("\n1.Insert 2.Delete 3.Search 4.Inorder 5.Preorder 6.Exit\n");
-        scanf("%d", &ch);
-        switch (ch) {
-            case 1: printf("Enter value: "); scanf("%d", &x); root = insert(root, x); break;
-            case 2: printf("Enter value: "); scanf("%d", &x); root = deleteNode(root, x); break;
-            case 3:
-                printf("Enter value: "); scanf("%d", &x);
-                if (search(root, x)) printf("Found\n"); else printf("Not found\n");
-                break;
-            case 4: inorder(root); printf("\n"); break;
-            case 5: preorder(root); printf("\n"); break;
-            case 6: break;
-            default: printf("Invalid choice\n");
-        }
-    } while (ch != 6);
-    return 0;
-}
-```
-
-**Remember:** Inorder = Left, Root, Right. Preorder = Root, Left, Right.
-
----
-
-## 13. Binary Search Tree: Insert, Delete, Search, Preorder, Postorder
-
-This is a complete standalone program.
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-
-struct Node {
-    int data;
-    struct Node *left, *right;
-};
-
-struct Node *newNode(int x) {
-    struct Node *p = (struct Node *)malloc(sizeof(struct Node));
-    if (p == NULL) return NULL;
-    p->data = x;
-    p->left = p->right = NULL;
-    return p;
-}
-
-struct Node *insert(struct Node *root, int x) {
-    if (root == NULL) return newNode(x);
-    if (x < root->data) root->left = insert(root->left, x);
-    else if (x > root->data) root->right = insert(root->right, x);
-    else printf("Duplicate value\n");
-    return root;
-}
-
-struct Node *minimum(struct Node *root) {
-    while (root != NULL && root->left != NULL)
-        root = root->left;
-    return root;
-}
-
-struct Node *deleteNode(struct Node *root, int x) {
-    struct Node *t;
-    if (root == NULL) return NULL;
-    if (x < root->data)
-        root->left = deleteNode(root->left, x);
-    else if (x > root->data)
-        root->right = deleteNode(root->right, x);
-    else {
-        if (root->left == NULL) {
-            t = root->right;
-            free(root);
-            return t;
-        }
-        if (root->right == NULL) {
-            t = root->left;
-            free(root);
-            return t;
-        }
-        t = minimum(root->right);
-        root->data = t->data;
-        root->right = deleteNode(root->right, t->data);
-    }
-    return root;
-}
-
-int search(struct Node *root, int x) {
-    if (root == NULL) return 0;
-    if (root->data == x) return 1;
-    if (x < root->data) return search(root->left, x);
-    return search(root->right, x);
-}
-
-void preorder(struct Node *root) {
-    if (root != NULL) {
-        printf("%d ", root->data);
-        preorder(root->left);
-        preorder(root->right);
-    }
-}
-
-void postorder(struct Node *root) {
-    if (root != NULL) {
-        postorder(root->left);
-        postorder(root->right);
-        printf("%d ", root->data);
-    }
-}
-
-int main() {
-    struct Node *root = NULL;
-    int ch, x;
-    do {
-        printf("\n1.Insert 2.Delete 3.Search 4.Preorder 5.Postorder 6.Exit\n");
-        scanf("%d", &ch);
-        switch (ch) {
-            case 1: printf("Enter value: "); scanf("%d", &x); root = insert(root, x); break;
-            case 2: printf("Enter value: "); scanf("%d", &x); root = deleteNode(root, x); break;
-            case 3:
-                printf("Enter value: "); scanf("%d", &x);
-                if (search(root, x)) printf("Found\n"); else printf("Not found\n");
-                break;
-            case 4: preorder(root); printf("\n"); break;
-            case 5: postorder(root); printf("\n"); break;
-            case 6: break;
-            default: printf("Invalid choice\n");
-        }
-    } while (ch != 6);
-    return 0;
-}
-```
-
-**Remember:** Preorder = Root, Left, Right. Postorder = Left, Right, Root.
-
----
-
-## 14. Binary Search Tree: Insert, Delete, Search, Find Minimum, Find Maximum
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-
-struct Node {
-    int data;
-    struct Node *left, *right;
-};
-
-struct Node *newNode(int x) {
-    struct Node *p = (struct Node *)malloc(sizeof(struct Node));
-    if (p == NULL) return NULL;
-    p->data = x;
-    p->left = p->right = NULL;
-    return p;
-}
-
-struct Node *insert(struct Node *root, int x) {
-    if (root == NULL) return newNode(x);
-    if (x < root->data) root->left = insert(root->left, x);
-    else if (x > root->data) root->right = insert(root->right, x);
-    else printf("Duplicate value\n");
-    return root;
-}
-
-struct Node *minimum(struct Node *root) {
-    if (root == NULL) return NULL;
-    while (root->left != NULL)
-        root = root->left;
-    return root;
-}
-
-struct Node *maximum(struct Node *root) {
-    if (root == NULL) return NULL;
-    while (root->right != NULL)
-        root = root->right;
-    return root;
-}
-
-struct Node *deleteNode(struct Node *root, int x) {
-    struct Node *t;
-    if (root == NULL) return NULL;
-    if (x < root->data) root->left = deleteNode(root->left, x);
-    else if (x > root->data) root->right = deleteNode(root->right, x);
-    else {
-        if (root->left == NULL) {
-            t = root->right;
-            free(root);
-            return t;
-        }
-        if (root->right == NULL) {
-            t = root->left;
-            free(root);
-            return t;
-        }
-        t = minimum(root->right);
-        root->data = t->data;
-        root->right = deleteNode(root->right, t->data);
-    }
-    return root;
-}
-
-int search(struct Node *root, int x) {
-    if (root == NULL) return 0;
-    if (root->data == x) return 1;
-    if (x < root->data) return search(root->left, x);
-    return search(root->right, x);
-}
-
-int main() {
-    struct Node *root = NULL, *t;
-    int ch, x;
-    do {
-        printf("\n1.Insert 2.Delete 3.Search 4.Minimum 5.Maximum 6.Exit\n");
-        scanf("%d", &ch);
-        switch (ch) {
-            case 1: printf("Enter value: "); scanf("%d", &x); root = insert(root, x); break;
-            case 2: printf("Enter value: "); scanf("%d", &x); root = deleteNode(root, x); break;
-            case 3:
-                printf("Enter value: "); scanf("%d", &x);
-                if (search(root, x)) printf("Found\n"); else printf("Not found\n");
-                break;
-            case 4:
-                t = minimum(root);
-                if (t == NULL) printf("Tree is empty\n"); else printf("Minimum: %d\n", t->data);
-                break;
-            case 5:
-                t = maximum(root);
-                if (t == NULL) printf("Tree is empty\n"); else printf("Maximum: %d\n", t->data);
-                break;
-            case 6: break;
-            default: printf("Invalid choice\n");
-        }
-    } while (ch != 6);
-    return 0;
-}
-```
-
-**Remember:** In a BST, minimum is the leftmost node and maximum is the rightmost node.
-
----
-
-## Quick Revision: What to Memorize
-
-| Topic | Key idea |
-|---|---|
-| Stack | LIFO; `top = -1` means empty |
-| Queue | FIFO; insert at rear, delete at front |
-| Circular queue | Use `(index + 1) % SIZE` |
-| Linked list | Each node stores data and a link |
-| Circular linked list | Last node links back to first |
-| Doubly linked list | Each node has `prev` and `next` |
-| BST insert/search | Smaller values go left; larger values go right |
-| Inorder | Left, Root, Right |
-| Preorder | Root, Left, Right |
-| Postorder | Left, Right, Root |
-| BST minimum/maximum | Leftmost/rightmost node |
